@@ -1,0 +1,90 @@
+---
+title: "DataPreparation"
+author: "Juan Manuel Tonello"
+date: "27 de junio de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)
+library(plotly)
+```
+
+## Obtener datos
+Partimos de una tabla con 6 columnas: fecha, open, high, low, close, volume
+Para hacer una prueba inicial, conectamos google sheets a google finance, copiar/pegar a un .csv (sheets no permite exportar datos de google finance).
+
+### Nomenclatura
+N: Cantidad de barras del set
+O: Open, precio de apertura
+H: High, precio máximo
+L: Low, precio mínimo
+C: Close, precio de cierre
+
+```{r load}
+d <- read.csv("X.csv", header = TRUE, sep = "\t")
+d$Date <- mdy_hms(d$Date)
+N <- dim(d)[1]
+```
+
+## Parámetros configurables
+*B: Back, barras del pasado usadas como input del modelo
+*F: Future, barras a futuro para la predicción 
+*P: Profit target (P>1)
+*S: Stop loss (S<1)
+
+```{r parameters, echo=FALSE}
+B <- 100
+F <- 20
+P <- 1.3
+S <- 0.95
+```
+
+## Etiquetar las filas
+Target_i = N/A para todo i < H || i > (N-F).
+Target_i = (H_i+k >= C_i . T para algún k, 0<k<=F ) && (L_i+j > C_i . L para todo 0<j<=k).
+
+En palabras: hay setup (target = TRUE) si dentro de las próximas F barras el máximo supera el profit target antes de que el mínimo supere el stop loss.
+
+```{r tag, echo=FALSE}
+d$Target <- NA
+for (i in B:(N-F) ) 
+{
+  for (j in 1:F)
+  {
+    # Si cruzó el stop loss
+    if (d$Low[i+j] <= d$Close[i]*S) 
+    {
+      d$Target[i] <- FALSE
+      break
+    }
+    
+    # Si cruzó el profit target
+    if (d$High[i+j] >= d$Close[i]*P)
+    {
+      d$Target[i] <- TRUE
+      break
+    }
+  }
+  #d$Target[i] <- FALSE
+}
+```
+
+## Plot data
+
+```{r plot, echo=FALSE, warning=FALSE}
+
+idxSetup <- !is.na(d$Target) & d$Target
+
+plot_ly(d, x = ~Date, type="candlestick",
+          open = ~d$Open, close = ~d$Close, high = ~d$High, low = ~d$Low,
+          increasing = grey, decreasing = grey) %>% 
+add_markers(x = d$Date[idxSetup], y = d$Close[idxSetup], type="markers", 
+              marker = list(size = 10,
+                            color = 'rgba(0, 255, 0, .9)',
+                            line = list(color = 'rgba(0, 150, 0, .8)', width = 2)
+                            )
+            )
+```
+
