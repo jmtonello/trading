@@ -88,3 +88,25 @@ add_markers(x = d$Date[idxSetup], y = d$Close[idxSetup], type="markers",
             )
 ```
 
+## To-Do
+Calcular la tasa de setup variando los parámetros S, P, F
+Armar el dataset de input aplanado
+Partirlo en training, test
+Buscar cómo equilibrar la cantidad de T y F
+Armar una red y entrenarla
+Medir sobre test
+Calcular truePositive, falsePositive
+Ver si necesito separar en training, validation, test para tunear los hiperparámetros
+Iterar
+Aplicar log a los precios
+Aplicar log al volumen?
+Automatizar la bajada de datos
+Bajar datos de varios activos
+Calcular tasa de setup para cada activo
+Armar datasets training, test con varios activos
+Entrenar y tunear hiperparámetros
+Automatizar la predicción diaria
+Averiguar cómo funciona la API de Ameritrade
+Diseñar un autómata que opere a partir de las predicciones
+Poner a funcionar el autómata en demo
+
