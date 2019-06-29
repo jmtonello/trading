@@ -1,9 +1,13 @@
 ---
-title: "DataPreparation"
+title: "Detectar setup alcista"
 author: "Juan Manuel Tonello"
 date: "27 de junio de 2019"
 output: html_document
 ---
+
+# Objetivo
+Detectar patrones alcistas mediante modelos predictivos.
+La idea inicial es armar un modelo de clasificación binaria (TRUE: hay setup,  FALSE: no hay setup) con entrenamiento supervisado.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -12,27 +16,28 @@ library(plotly)
 ```
 
 ## Obtener datos
-Partimos de una tabla con 6 columnas: fecha, open, high, low, close, volume
+Partimos de una tabla con 6 columnas: fecha, open, high, low, close, volume.
 Para hacer una prueba inicial, conectamos google sheets a google finance, copiar/pegar a un .csv (sheets no permite exportar datos de google finance).
 
 ### Nomenclatura
-N: Cantidad de barras del set
-O: Open, precio de apertura
-H: High, precio máximo
-L: Low, precio mínimo
-C: Close, precio de cierre
+* N: Cantidad de barras del set
+* O: Open, precio de apertura
+* H: High, precio máximo
+* L: Low, precio mínimo
+* C: Close, precio de cierre
+* V: Volumen
 
-```{r load}
+```{r load, echo=FALSE}
 d <- read.csv("X.csv", header = TRUE, sep = "\t")
 d$Date <- mdy_hms(d$Date)
 N <- dim(d)[1]
-```
 
-## Parámetros configurables
-*B: Back, barras del pasado usadas como input del modelo
-*F: Future, barras a futuro para la predicción 
-*P: Profit target (P>1)
-*S: Stop loss (S<1)
+head(d)
+```
+N = `r N`
+
+## Etiquetar los datos históricos
+Antes de entrenar el modelo vamos a etiquetar los datos históricos indicando cuándo hubo setup y cuándo no.
 
 ```{r parameters, echo=FALSE}
 B <- 100
@@ -41,9 +46,15 @@ P <- 1.3
 S <- 0.95
 ```
 
-## Etiquetar las filas
+### Parámetros 
+* B: Back, barras del pasado usadas como input del modelo.  (B = `r B`)
+* F: Future, barras a futuro para la predicción.  (F = `r F`)
+* P: Profit target (P>1).  (P = `r P`)
+* S: Stop loss (S<1).  (S = `r S`)
+
+### Criterio para etiquetar
 Target_i = N/A para todo i < H || i > (N-F).
-Target_i = (H_i+k >= C_i . T para algún k, 0<k<=F ) && (L_i+j > C_i . L para todo 0<j<=k).
+Target_i = (H_i+k >= C_i . T para algún k, 0 < k <= F ) && (L_i+j > C_i . L para todo 0 < j <= k).
 
 En palabras: hay setup (target = TRUE) si dentro de las próximas F barras el máximo supera el profit target antes de que el mínimo supere el stop loss.
 
@@ -71,8 +82,7 @@ for (i in B:(N-F) )
 }
 ```
 
-## Plot data
-
+## Datos etiquetados
 ```{r plot, echo=FALSE, warning=FALSE}
 
 idxSetup <- !is.na(d$Target) & d$Target
@@ -89,24 +99,24 @@ add_markers(x = d$Date[idxSetup], y = d$Close[idxSetup], type="markers",
 ```
 
 ## To-Do
-Calcular la tasa de setup variando los parámetros S, P, F
-Armar el dataset de input aplanado
-Partirlo en training, test
-Buscar cómo equilibrar la cantidad de T y F
-Armar una red y entrenarla
-Medir sobre test
-Calcular truePositive, falsePositive
-Ver si necesito separar en training, validation, test para tunear los hiperparámetros
-Iterar
-Aplicar log a los precios
-Aplicar log al volumen?
-Automatizar la bajada de datos
-Bajar datos de varios activos
-Calcular tasa de setup para cada activo
-Armar datasets training, test con varios activos
-Entrenar y tunear hiperparámetros
-Automatizar la predicción diaria
-Averiguar cómo funciona la API de Ameritrade
-Diseñar un autómata que opere a partir de las predicciones
-Poner a funcionar el autómata en demo
+* Ajustar la tasa de setups variando los parámetros S, P, F
+* Armar el dataset de input aplanado
+* Partirlo en training y test
+* Equilibrar la cantidad de T y F
+* Armar una red y entrenarla
+* Medir sobre test
+* Calcular truePositive, falsePositive
+* Analizar si es necesario separar en training, validation, test para tunear los hiperparámetros
+* Iterar
+* Aplicar log a los precios
+* Aplicar log al volumen?
+* Automatizar la bajada de datos
+* Bajar datos de varios activos
+* Calcular tasa de setup para cada activo
+* Armar datasets consolidando varios activos
+* Entrenar y tunear hiperparámetros
+* Automatizar la predicción diaria
+* Averiguar cómo funciona la API de Ameritrade
+* Diseñar un autómata que opere a partir de las predicciones
+* Poner a funcionar el autómata en demo
 
