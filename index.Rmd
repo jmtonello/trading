@@ -7,7 +7,7 @@ output: html_document
 
 # Objetivo
 Detectar patrones alcistas mediante modelos predictivos.
-La idea inicial es armar un modelo de clasificación binaria (TRUE: hay setup,  FALSE: no hay setup) con entrenamiento supervisado.
+La idea inicial es armar un modelo de clasificación binaria con entrenamiento supervisado.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
