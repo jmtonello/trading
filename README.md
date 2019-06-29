@@ -1,3 +1,5 @@
 # Objetivo
-Detectar patrones alcistas mediante modelos predictivos.
-La idea inicial es armar un modelo de clasificación binaria con entrenamiento supervisado.
+Desarrollar estrategias de trading aplicando modelos predictivos. 
+
+[Detectar setup alcista](https://jmtonello.github.io/trading/index.html).
+Modelo de clasificación binaria y entrenamiento supervisado.
